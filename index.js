@@ -69,7 +69,7 @@ class Projectile {
   constructor({ position, velocity }) {
     this.position = position
     this.velocity = velocity
-    this.radius = 3
+    this.radius = 4
   }
   draw() {
     c.beginPath()
@@ -77,6 +77,23 @@ class Projectile {
     c.fillStyle = 'red'
     c.fill()
     c.closePath()
+  }
+  update() {
+    this.draw()
+    this.position.x += this.velocity.x
+    this.position.y += this.velocity.y
+  }
+}
+class InvaderProjectile {
+  constructor({ position, velocity }) {
+    this.position = position
+    this.velocity = velocity
+    this.width = 3
+    this.height = 10
+  }
+  draw() {
+    c.fillStyle = 'white'
+    c.fillRect(this.position.x, this.position.y, this.width, this.height)
   }
   update() {
     this.draw()
@@ -131,6 +148,20 @@ class Invader {
       this.position.y += velocity.y
     }
   }
+  shoot(invaderProjectiles) {
+    invaderProjectiles.push(
+      new InvaderProjectile({
+        position: {
+          x: this.position.x + this.width / 2,
+          y: this.position.y + this.height,
+        },
+        velocity: {
+          x: 0,
+          y: 5,
+        },
+      }),
+    )
+  }
 }
 
 class Grid {
@@ -140,12 +171,14 @@ class Grid {
       y: 0,
     }
     this.velocity = {
-      x: 3,
+      x: 1,
       y: 0,
     }
     this.invaders = []
     const columns = Math.floor(Math.random() * 10 + 5)
     const rows = Math.floor(Math.random() * 5 + 2)
+
+    this.width = columns * 30
     for (let x = 0; x < columns; x++) {
       for (let y = 0; y < rows; y++) {
         this.invaders.push(
@@ -162,12 +195,23 @@ class Grid {
   update() {
     this.position.x += this.velocity.x
     this.position.y += this.velocity.y
+
+    this.velocity.y = 0
+    if (this.position.x + this.width >= canvas.width) {
+      this.velocity.x = -this.velocity.x
+      this.velocity.y = 30
+    }
+    if (this.position.x <= 0) {
+      this.velocity.x = -this.velocity.x
+      this.velocity.y = 30
+    }
   }
 }
 
 const player = new Player()
-const grids = [new Grid()]
+const grids = []
 const projectiles = []
+const invaderProjectiles = []
 
 const keys = {
   a: {
@@ -180,6 +224,8 @@ const keys = {
     pressed: false,
   },
 }
+let frames = 0
+let randomInterval = Math.floor(Math.random() * 500 + 500)
 function animate() {
   requestAnimationFrame(animate)
   c.fillStyle = 'black'
@@ -204,6 +250,26 @@ function animate() {
 
   player.update()
 
+  invaderProjectiles.forEach((invaderProjectile, index) => {
+    if (
+      invaderProjectile.position.y + invaderProjectile.height >=
+      canvas.height
+    ) {
+    } else {
+      invaderProjectile.update()
+    }
+    if (
+      invaderProjectile.position.y + invaderProjectile.height >=
+        player.position.y &&
+      invaderProjectile.position.x + invaderProjectile.width >=
+        player.position.x &&
+      invaderProjectile.position.x <= player.position.x + player.width
+    ) {
+      console.log('game ended')
+    }
+  })
+  // console.log(invaderProjectiles)
+
   projectiles.forEach((projectile, index) => {
     if (projectile.position.y + projectile.radius / 2 <= 0) {
       setTimeout(() => {
@@ -213,18 +279,93 @@ function animate() {
       projectile.update()
     }
   })
-  grids.forEach((grid) => {
+
+  grids.forEach((grid, gridIndex) => {
     grid.update()
 
-    grid.invaders.forEach((invader) => {
+    // spawn projectiles
+    if (frames % 500 == 0 && grid) {
+      grid.invaders[Math.floor(Math.random() * grid.invaders.length)].shoot(
+        invaderProjectiles,
+      )
+    }
+    grid.invaders.forEach((invader, i) => {
       invader.update({
         velocity: {
-          x: 1,
-          y: 0,
+          x: grid.velocity.x,
+          y: grid.velocity.y,
         },
+      })
+      projectiles.forEach((projectile, j) => {
+        // if (
+        //   projectile.position.x === invader.position.x &&
+        //   projectile.position.y === invader.position.y + invader.height
+        // ) {
+        //   console.log('collide')
+        // }
+        if (
+          projectile.position.y - projectile.radius <=
+            invader.position.y + invader.height &&
+          projectile.position.x + projectile.radius >= invader.position.x &&
+          projectile.position.x - projectile.radius <=
+            invader.position.x + invader.width &&
+          projectile.position.y + projectile.radius >= invader.position.y
+        ) {
+          console.log('outside of the setTimout')
+          // console.log('collide')
+          setTimeout(() => {
+            const invaderFound = grid.invaders.find((invader2) => {
+              return invader2 === invader
+            })
+            const projectTileFound = projectiles.find(
+              (projectile2) => projectile2 === projectile,
+            )
+            /* it is important to set the if conditions because there can be a case when element is not removed right away but after sometime when that projectile matches with some other invader in the same foreach and set the setTememout , and first setTimeout removes the invader 
+            and again tries to remove the invader that matches second time in the foreach , it will cause problem that is why we added if condition
+             */
+            // remove invader and projectile here
+            if (invaderFound && projectTileFound) {
+              grid.invaders.splice(i, 1)
+              projectiles.splice(j, 1)
+              console.log('inside the setTimeout')
+            }
+            if (grid.invaders.length > 0) {
+              const firstInvader = grid.invaders[0]
+              const lastInvader = grid.invaders[grid.invaders.length - 1]
+              grid.position.x = firstInvader.position.x
+              grid.width =
+                lastInvader.position.x -
+                firstInvader.position.x +
+                lastInvader.width
+            } else {
+              grids.splice(gridIndex, 1)
+            }
+          }, 0)
+        }
+        // my way of doing
+        // if (
+        //   projectile.position.y <= invader.position.y + invader.height &&
+        //   projectile.position.x + 2 * projectile.radius >= invader.position.x &&
+        //   projectile.position.x - projectile.radius <= invader.position.x &&
+        //   projectile.position.y >= invader.position.y
+        // ) {
+        //   // console.log('collide')
+        //   setTimeout(() => {
+        //     grid.invaders.splice(i, 1)
+        //     projectiles.splice(j, 1)
+        //   }, 0)
+        // }
+        //----------------------------------
       })
     })
   })
+  if (frames % randomInterval === 0) {
+    grids.push(new Grid())
+    randomInterval = Math.floor(Math.random() * 500 + 500)
+    frames = 0
+  }
+
+  frames++
 }
 animate()
 
