@@ -1,8 +1,17 @@
 const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
+const scoreEl = document.querySelector('#scoreEl')
+const start = document.querySelector('.start')
+const specialElement = document.querySelector('.specialElement')
+const overImage = new Image()
+overImage.src =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png'
+// overImage.width = ' 400'
+// overImage.height = '400'
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+const c = canvas.getContext('2d')
+console.log(scoreEl)
+canvas.width = 1024
+canvas.height = 576
 
 // player class
 class Player {
@@ -12,7 +21,7 @@ class Player {
       x: 0,
       y: 0,
     }
-
+    this.opacity = 1
     // how much player should rotate
     this.rotation = 0
 
@@ -34,6 +43,7 @@ class Player {
   // to draw the image of the spaceship
   draw() {
     c.save()
+    c.globalAlpha = this.opacity
     c.translate(
       player.position.x + player.width / 2,
       player.position.y + player.height / 2,
@@ -61,6 +71,34 @@ class Player {
     if (this.image) {
       this.draw()
       this.position.x += this.velocity.x
+    }
+  }
+}
+class Particle {
+  constructor({ position, velocity, radius, color, fades }) {
+    this.position = position
+    this.velocity = velocity
+    this.radius = radius
+    this.color = color
+    this.opacity = 1
+    this.fades = fades
+  }
+  draw() {
+    c.save()
+    c.globalAlpha = this.opacity
+    c.beginPath()
+    c.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI)
+    c.fillStyle = this.color
+    c.fill()
+    c.closePath()
+    c.restore()
+  }
+  update() {
+    this.draw()
+    this.position.x += this.velocity.x
+    this.position.y += this.velocity.y
+    if (this.fades) {
+      this.opacity -= 0.01
     }
   }
 }
@@ -208,11 +246,37 @@ class Grid {
   }
 }
 
+let game = {
+  over: false,
+  active: false,
+}
 const player = new Player()
-const grids = []
-const projectiles = []
-const invaderProjectiles = []
+let grids = []
+let projectiles = []
+let invaderProjectiles = []
+let particles = []
+let score = 0
+specialElement.addEventListener('click', () => {
+  console.log('excellent work')
+  start.blur()
+})
+start.addEventListener('click', (e) => {
+  specialElement.click()
 
+  game.active = !game.active
+  if (start.textContent === 'Start') {
+    game.over = false
+    player.opacity = 1
+    frames = 0
+    scoreEl.textContent = 0
+  }
+
+  console.log(start.textContent)
+  if (start.textContent === 'Start') {
+    start.textContent = 'Pause'
+  } else if (start.textContent === 'Pause') start.textContent = 'Resume'
+  else if (start.textContent === 'Resume') start.textContent = 'Pause'
+})
 const keys = {
   a: {
     pressed: false,
@@ -226,13 +290,77 @@ const keys = {
 }
 let frames = 0
 let randomInterval = Math.floor(Math.random() * 500 + 500)
+for (let i = 0; i < 80; i++) {
+  particles.push(
+    new Particle({
+      position: {
+        x: Math.floor(Math.random() * canvas.width),
+        y: Math.floor(Math.random() * canvas.height),
+      },
+      velocity: {
+        x: 0,
+        y: 0.3,
+      },
+      radius: Math.random() * 3,
+      color: 'white',
+      fades: false,
+    }),
+  )
+}
+
+function createParticles({ object, color, fades }) {
+  for (let i = 0; i < 15; i++) {
+    particles.push(
+      new Particle({
+        position: {
+          x: object.position.x + object.width / 2,
+          y: object.position.y + object.height / 2,
+        },
+        velocity: {
+          x: (Math.random() - 0.5) * 2,
+          y: (Math.random() - 0.5) * 2,
+        },
+        radius: Math.random() * 3,
+        color: color || '#BAA0DE',
+        fades: fades,
+      }),
+    )
+  }
+}
+
+class Score {
+  constructor(score) {
+    this.score = score
+  }
+  draw() {
+    c.font = '20px Georgia'
+    c.fillText(`${this.score}`, 10, 50)
+  }
+  update() {
+    this.draw()
+  }
+}
 function animate() {
   requestAnimationFrame(animate)
-  c.fillStyle = 'black'
+  if (game.over) {
+    grids = []
+    projectiles = []
+    invaderProjectiles = []
+    particles = []
+    // c.fillStyle = 'green'
+    // c.fillRect(0, 0, canvas.width, canvas.height)
+    // c.drawImage(overImage, canvas.width / 2, canvas.height / 2, 400, 300)
+    c.font = '200px Arial'
+    c.fillStyle = 'white'
+    c.fillText(`${score}`, canvas.width / 2 - 100, canvas.height / 2 + 50)
+  }
 
   //creating the canvas
+  if (!game.active) {
+    return
+  }
+  c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
-
   // setting the velocity of the spaceship on every key stroke
   if (keys.a.pressed && player.position.x >= 0) {
     player.velocity.x = -5
@@ -250,11 +378,27 @@ function animate() {
 
   player.update()
 
+  particles.forEach((particle, index) => {
+    if (particle.position.y + particle.radius >= canvas.height) {
+      particle.position.x = Math.floor(Math.random() * canvas.width)
+      particle.position.y = 0
+    }
+    if (particle.opacity <= 0) {
+      setTimeout(() => {
+        particles.splice(index, 1)
+      }, 0)
+    } else {
+      particle.update()
+    }
+  })
   invaderProjectiles.forEach((invaderProjectile, index) => {
     if (
       invaderProjectile.position.y + invaderProjectile.height >=
       canvas.height
     ) {
+      setTimeout(() => {
+        invaderProjectiles.splice(index, 1)
+      }, 0)
     } else {
       invaderProjectile.update()
     }
@@ -266,6 +410,17 @@ function animate() {
       invaderProjectile.position.x <= player.position.x + player.width
     ) {
       console.log('game ended')
+      setTimeout(() => {
+        console.log('game ended inside')
+        invaderProjectiles.splice(index, 1)
+        player.opacity = 0
+        game.over = true
+        start.textContent = 'Start'
+      }, 0)
+      setTimeout(() => {
+        game.active = false
+      }, 2000)
+      createParticles({ object: player, fades: true })
     }
   })
   // console.log(invaderProjectiles)
@@ -297,12 +452,6 @@ function animate() {
         },
       })
       projectiles.forEach((projectile, j) => {
-        // if (
-        //   projectile.position.x === invader.position.x &&
-        //   projectile.position.y === invader.position.y + invader.height
-        // ) {
-        //   console.log('collide')
-        // }
         if (
           projectile.position.y - projectile.radius <=
             invader.position.y + invader.height &&
@@ -311,7 +460,6 @@ function animate() {
             invader.position.x + invader.width &&
           projectile.position.y + projectile.radius >= invader.position.y
         ) {
-          console.log('outside of the setTimout')
           // console.log('collide')
           setTimeout(() => {
             const invaderFound = grid.invaders.find((invader2) => {
@@ -325,6 +473,10 @@ function animate() {
              */
             // remove invader and projectile here
             if (invaderFound && projectTileFound) {
+              score += 100
+              scoreEl.textContent = score
+              createParticles({ object: invader, fades: true })
+
               grid.invaders.splice(i, 1)
               projectiles.splice(j, 1)
               console.log('inside the setTimeout')
@@ -371,6 +523,7 @@ animate()
 
 // for every keydown event
 addEventListener('keydown', ({ key }) => {
+  if (game.over) return
   switch (key) {
     case 'a':
       // console.log('left')
