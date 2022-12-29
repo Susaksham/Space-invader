@@ -1,8 +1,33 @@
+// const Player = require('./classesFolder/Person')
+
 const canvas = document.querySelector('canvas')
 const scoreEl = document.querySelector('#scoreEl')
 const start = document.querySelector('.start')
 const specialElement = document.querySelector('.specialElement')
+const container = document.querySelector('.container')
+const scoreElement = document.querySelector('.score')
 const overImage = new Image()
+const pause = document.querySelector('.pause')
+const box = document.querySelector('.box')
+const highestScoreElement = document.querySelector('.highestScore')
+let scoresArray = []
+let highestScore = 0
+const stats = document.querySelector('.stats')
+window.addEventListener('load', () => {
+  const statsResult = JSON.parse(localStorage.getItem('invaderGame'))
+  console.log(statsResult)
+  scoresArray = statsResult.scores
+  const parsedResult = statsResult.scores.map((score) => {
+    console.log(score)
+    return `<li> ${score} </li>`
+  })
+  highestScore = statsResult.highestScore
+  highestScoreElement.innerHTML = `<li> ${highestScore} </li>`
+  const finalResult = parsedResult.join('')
+  console.log(finalResult)
+  stats.innerHTML = finalResult
+})
+let flag = true
 overImage.src =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png'
 // overImage.width = ' 400'
@@ -27,9 +52,9 @@ class Player {
 
     // creating the spaceship
     const image = new Image()
-    image.src = './image/spaceship.png'
+    image.src = './image/spaceship1.png'
     image.onload = () => {
-      const scale = 0.15
+      const scale = 0.05
       this.image = image
       this.width = image.width * scale
       this.height = image.height * scale
@@ -256,27 +281,50 @@ let projectiles = []
 let invaderProjectiles = []
 let particles = []
 let score = 0
+function scoresHandler(score) {
+  if (scoresArray.length >= 5) {
+    scoresArray.splice(0, 1)
+  }
+  scoresArray.push(score)
+  if (score > highestScore) {
+    highestScore = score
+  }
+  const statsObject = { scores: scoresArray, highestScore: highestScore }
+  localStorage.setItem('invaderGame', JSON.stringify(statsObject))
+  const parsedResult = statsObject.scores.map((score) => {
+    console.log(score)
+    return `<li> ${score} </li>`
+  })
+  const finalResult = parsedResult.join('')
+  console.log(finalResult)
+  stats.innerHTML = finalResult
+  highestScoreElement.innerHTML = `<li> ${highestScore} </li>`
+}
 specialElement.addEventListener('click', () => {
-  console.log('excellent work')
-  start.blur()
+  var gameOverAudio = new Audio('./Audio/gameover.wav')
+  gameOverAudio.play()
 })
 start.addEventListener('click', (e) => {
-  specialElement.click()
-
-  game.active = !game.active
-  if (start.textContent === 'Start') {
-    game.over = false
-    player.opacity = 1
-    frames = 0
-    scoreEl.textContent = 0
-  }
-
-  console.log(start.textContent)
-  if (start.textContent === 'Start') {
-    start.textContent = 'Pause'
-  } else if (start.textContent === 'Pause') start.textContent = 'Resume'
-  else if (start.textContent === 'Resume') start.textContent = 'Pause'
+  start.blur()
+  flag = true
+  game.active = true
+  game.over = false
+  player.opacity = 1
+  frames = 0
+  scoreEl.textContent = 0
+  starsShowing()
+  container.classList.remove('remover')
+  scoreElement.classList.remove('remover')
+  box.classList.add('remover')
+  pause.classList.remove('remover')
 })
+pause.addEventListener('click', () => {
+  game.active = !game.active
+  if (pause.textContent === 'Resume') pause.textContent = 'Pause'
+  else if (pause.textContent === 'Pause') pause.textContent = 'Resume'
+  pause.blur()
+})
+
 const keys = {
   a: {
     pressed: false,
@@ -290,22 +338,25 @@ const keys = {
 }
 let frames = 0
 let randomInterval = Math.floor(Math.random() * 500 + 500)
-for (let i = 0; i < 80; i++) {
-  particles.push(
-    new Particle({
-      position: {
-        x: Math.floor(Math.random() * canvas.width),
-        y: Math.floor(Math.random() * canvas.height),
-      },
-      velocity: {
-        x: 0,
-        y: 0.3,
-      },
-      radius: Math.random() * 3,
-      color: 'white',
-      fades: false,
-    }),
-  )
+function starsShowing() {
+  for (let i = 0; i < 80; i++) {
+    console.log('particles pushed')
+    particles.push(
+      new Particle({
+        position: {
+          x: Math.floor(Math.random() * canvas.width),
+          y: Math.floor(Math.random() * canvas.height),
+        },
+        velocity: {
+          x: 0,
+          y: 0.3,
+        },
+        radius: Math.random() * 3,
+        color: 'white',
+        fades: false,
+      }),
+    )
+  }
 }
 
 function createParticles({ object, color, fades }) {
@@ -327,32 +378,33 @@ function createParticles({ object, color, fades }) {
     )
   }
 }
+function gameOverResult(score) {
+  grids = []
+  projectiles = []
+  invaderProjectiles = []
+  particles = []
 
-class Score {
-  constructor(score) {
-    this.score = score
-  }
-  draw() {
-    c.font = '20px Georgia'
-    c.fillText(`${this.score}`, 10, 50)
-  }
-  update() {
-    this.draw()
-  }
+  c.font = '100px Arial'
+  c.fillStyle = 'white'
+  var firstNameGradient = c.createLinearGradient(6, 38, 6, 70)
+  firstNameGradient.addColorStop(0, 'black')
+  firstNameGradient.addColorStop(1, 'green')
+  c.fillStyle = firstNameGradient
+  c.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 50)
+  c.textAlign = 'center'
+  c.font = '100px Arial'
+  c.fillText(`${score}`, canvas.width / 2, canvas.height / 2 + 100)
+  c.textAlign = 'center'
 }
+
 function animate() {
   requestAnimationFrame(animate)
   if (game.over) {
-    grids = []
-    projectiles = []
-    invaderProjectiles = []
-    particles = []
-    // c.fillStyle = 'green'
-    // c.fillRect(0, 0, canvas.width, canvas.height)
-    // c.drawImage(overImage, canvas.width / 2, canvas.height / 2, 400, 300)
-    c.font = '200px Arial'
-    c.fillStyle = 'white'
-    c.fillText(`${score}`, canvas.width / 2 - 100, canvas.height / 2 + 50)
+    gameOverResult(score)
+  }
+  if (game.over && flag) {
+    specialElement.click()
+    flag = false
   }
 
   //creating the canvas
@@ -391,55 +443,11 @@ function animate() {
       particle.update()
     }
   })
-  invaderProjectiles.forEach((invaderProjectile, index) => {
-    if (
-      invaderProjectile.position.y + invaderProjectile.height >=
-      canvas.height
-    ) {
-      setTimeout(() => {
-        invaderProjectiles.splice(index, 1)
-      }, 0)
-    } else {
-      invaderProjectile.update()
-    }
-    if (
-      invaderProjectile.position.y + invaderProjectile.height >=
-        player.position.y &&
-      invaderProjectile.position.x + invaderProjectile.width >=
-        player.position.x &&
-      invaderProjectile.position.x <= player.position.x + player.width
-    ) {
-      console.log('game ended')
-      setTimeout(() => {
-        console.log('game ended inside')
-        invaderProjectiles.splice(index, 1)
-        player.opacity = 0
-        game.over = true
-        start.textContent = 'Start'
-      }, 0)
-      setTimeout(() => {
-        game.active = false
-      }, 2000)
-      createParticles({ object: player, fades: true })
-    }
-  })
-  // console.log(invaderProjectiles)
-
-  projectiles.forEach((projectile, index) => {
-    if (projectile.position.y + projectile.radius / 2 <= 0) {
-      setTimeout(() => {
-        projectiles.splice(index, 1)
-      }, 0) // to remove the projectile if it moves out of the screen
-    } else {
-      projectile.update()
-    }
-  })
-
   grids.forEach((grid, gridIndex) => {
     grid.update()
 
     // spawn projectiles
-    if (frames % 500 == 0 && grid) {
+    if (frames % 200 == 0 && grid) {
       grid.invaders[Math.floor(Math.random() * grid.invaders.length)].shoot(
         invaderProjectiles,
       )
@@ -511,6 +519,56 @@ function animate() {
       })
     })
   })
+  invaderProjectiles.forEach((invaderProjectile, index) => {
+    if (
+      invaderProjectile.position.y + invaderProjectile.height >=
+      canvas.height
+    ) {
+      setTimeout(() => {
+        invaderProjectiles.splice(index, 1)
+      }, 0)
+    } else {
+      invaderProjectile.update()
+    }
+    if (
+      invaderProjectile.position.y + invaderProjectile.height >=
+        player.position.y &&
+      invaderProjectile.position.x + invaderProjectile.width >=
+        player.position.x &&
+      invaderProjectile.position.x <= player.position.x + player.width
+    ) {
+      console.log('game ended')
+      setTimeout(() => {
+        console.log('game ended inside')
+        invaderProjectiles.splice(index, 1)
+        player.opacity = 0
+        game.over = true
+        scoresHandler(score)
+      }, 0)
+      setTimeout(() => {
+        game.active = false
+        setTimeout(() => {
+          container.classList.add('remover')
+          scoreElement.classList.add('remover')
+          pause.classList.add('remover')
+          box.classList.remove('remover')
+        }, 2000)
+      }, 2000)
+      createParticles({ object: player, fades: true })
+    }
+  })
+  // console.log(invaderProjectiles)
+
+  projectiles.forEach((projectile, index) => {
+    if (projectile.position.y + projectile.radius / 2 <= 0) {
+      setTimeout(() => {
+        projectiles.splice(index, 1)
+      }, 0) // to remove the projectile if it moves out of the screen
+    } else {
+      projectile.update()
+    }
+  })
+
   if (frames % randomInterval === 0) {
     grids.push(new Grid())
     randomInterval = Math.floor(Math.random() * 500 + 500)
