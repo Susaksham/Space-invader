@@ -17,11 +17,6 @@ window.addEventListener('load', () => {
   const statsResult = JSON.parse(localStorage.getItem('invaderGame'))
   console.log(statsResult)
   scoresArray = statsResult.scores
-  if (scoresArray.length === 0) {
-    highestScoreElement.innerHTML = `<li> No game Played yet</li>`
-    stats.innerHTML = 'No result found'
-    return
-  }
   const parsedResult = statsResult.scores.map((score) => {
     console.log(score)
     return `<li> ${score} </li>`
