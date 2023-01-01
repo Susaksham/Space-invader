@@ -6,16 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="styles.css" />
+    <!-- <link rel="stylesheet" href="planet.css" /> -->
   </head>
   <body>
+    <!-- <div class="planet-area">
+      <img
+        alt="rocket"
+        title="rocket"
+        class="rocket"
+        src="https://stepik.org/media/attachments/lesson/452681/rocket.png"
+      />
+      <img
+        alt="mars"
+        title="mars"
+        class="planet"
+        src="https://stepik.org/media/attachments/lesson/452681/mars.png"
+      />
+    </div> -->
+    <div class="filter"></div>
     <h1 class="heading">Space Invader</h1>
     <div class="box">
-      <!-- <h1>Scores</h1> -->
-      <ul class="stats">
-        <li>stats</li>
-      </ul>
-      <h2>highestScore</h2>
-      <ul class="highestScore"></ul>
+      <div class="lastStats">
+        <h1>Last 5 Match Scores</h1>
+        <ul class="stats">
+          <li>stats</li>
+        </ul>
+      </div>
+      <div class="highestScoreStats">
+        <h2>highestScore</h2>
+        <ul class="highestScore"></ul>
+      </div>
       <div><button class="start">Start</button></div>
     </div>
 
@@ -26,7 +46,7 @@
         <span id="scoreEl">0</span>
       </p>
       <canvas class="canvas"></canvas>
-      <div><button class="pause remover">Pause</button></div>
+      <div class="controls"><button class="pause remover">Pause</button></div>
     </div>
     <script src="index.js"></script>
     <script type="module" src="./classesFolder/Person.js"></script>
