@@ -529,6 +529,7 @@ function animate() {
       setTimeout(() => {
         game.active = false
         setTimeout(() => {
+          score = 0
           container.classList.add('remover')
           background.classList.remove('active')
           scoreElement.classList.add('remover')
