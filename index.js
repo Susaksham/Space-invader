@@ -1,5 +1,5 @@
 // const Player = require('./classesFolder/Person')
-
+// import Player from './classesFolder/Person'
 const canvas = document.querySelector('canvas')
 const scoreEl = document.querySelector('#scoreEl')
 const start = document.querySelector('.start')
@@ -7,31 +7,22 @@ const specialElement = document.querySelector('.specialElement')
 const container = document.querySelector('.container')
 const scoreElement = document.querySelector('.score')
 const overImage = new Image()
-const pause = document.querySelector('.pause')
+const pause = document.querySelectorAll('.pause')
 const box = document.querySelector('.box')
 const highestScoreElement = document.querySelector('.highestScore')
-let scoresArray = []
-let highestScore = 0
-const stats = document.querySelector('.stats')
-window.addEventListener('load', () => {
-  const statsResult = JSON.parse(localStorage.getItem('invaderGame'))
-  console.log(statsResult)
-  scoresArray = statsResult.scores
-  const parsedResult = statsResult.scores.map((score) => {
-    console.log(score)
-    return `<li> ${score} </li>`
-  })
-  highestScore = statsResult.highestScore
-  highestScoreElement.innerHTML = `<li> ${highestScore} </li>`
-  const finalResult = parsedResult.join('')
-  console.log(finalResult)
-  stats.innerHTML = finalResult
+const heading = document.querySelector('.heading')
+const background = document.querySelector('#particles-js')
+const quit = document.querySelector('.quite')
+const info = document.querySelector('.info')
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    quit.click()
+  }
 })
+
 let flag = true
 overImage.src =
   'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png'
-// overImage.width = ' 400'
-// overImage.height = '400'
 
 const c = canvas.getContext('2d')
 console.log(scoreEl)
@@ -281,30 +272,24 @@ let projectiles = []
 let invaderProjectiles = []
 let particles = []
 let score = 0
-function scoresHandler(score) {
-  if (scoresArray.length >= 5) {
-    scoresArray.splice(0, 1)
-  }
-  scoresArray.push(score)
-  if (score > highestScore) {
-    highestScore = score
-  }
-  const statsObject = { scores: scoresArray, highestScore: highestScore }
-  localStorage.setItem('invaderGame', JSON.stringify(statsObject))
-  const parsedResult = statsObject.scores.map((score) => {
-    console.log(score)
-    return `<li> ${score} </li>`
-  })
-  const finalResult = parsedResult.join('')
-  console.log(finalResult)
-  stats.innerHTML = finalResult
-  highestScoreElement.innerHTML = `<li> ${highestScore} </li>`
-}
+
 specialElement.addEventListener('click', () => {
   var gameOverAudio = new Audio('./Audio/gameover.wav')
   gameOverAudio.play()
 })
-start.addEventListener('click', (e) => {
+
+start.addEventListener('click', async (e) => {
+  const promise = new Promise((res, rej) => {
+    if (res) {
+      start.classList.add('active')
+      setTimeout(() => {
+        start.classList.remove('active')
+        res('done')
+      }, 1000)
+    }
+  })
+  const res = await promise
+
   start.blur()
   flag = true
   game.active = true
@@ -313,16 +298,26 @@ start.addEventListener('click', (e) => {
   frames = 0
   scoreEl.textContent = 0
   starsShowing()
+  background.classList.add('active')
+  heading.classList.add('remover')
   container.classList.remove('remover')
   scoreElement.classList.remove('remover')
   box.classList.add('remover')
-  pause.classList.remove('remover')
+  pause[0].classList.remove('remover')
+  pause[1].classList.remove('remover')
+  info.classList.add('hide')
 })
-pause.addEventListener('click', () => {
+pause[0].addEventListener('click', () => {
   game.active = !game.active
-  if (pause.textContent === 'Resume') pause.textContent = 'Pause'
-  else if (pause.textContent === 'Pause') pause.textContent = 'Resume'
-  pause.blur()
+  console.log(pause.src)
+  pause[0].classList.add('hide')
+  pause[1].classList.remove('hide')
+})
+pause[1].addEventListener('click', () => {
+  game.active = !game.active
+  console.log(pause.src)
+  pause[0].classList.remove('hide')
+  pause[1].classList.add('hide')
 })
 
 const keys = {
@@ -388,7 +383,7 @@ function gameOverResult(score) {
   c.fillStyle = 'white'
   var firstNameGradient = c.createLinearGradient(6, 38, 6, 70)
   firstNameGradient.addColorStop(0, 'black')
-  firstNameGradient.addColorStop(1, 'green')
+  firstNameGradient.addColorStop(1, 'yellow')
   c.fillStyle = firstNameGradient
   c.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 50)
   c.textAlign = 'center'
@@ -502,20 +497,6 @@ function animate() {
             }
           }, 0)
         }
-        // my way of doing
-        // if (
-        //   projectile.position.y <= invader.position.y + invader.height &&
-        //   projectile.position.x + 2 * projectile.radius >= invader.position.x &&
-        //   projectile.position.x - projectile.radius <= invader.position.x &&
-        //   projectile.position.y >= invader.position.y
-        // ) {
-        //   // console.log('collide')
-        //   setTimeout(() => {
-        //     grid.invaders.splice(i, 1)
-        //     projectiles.splice(j, 1)
-        //   }, 0)
-        // }
-        //----------------------------------
       })
     })
   })
@@ -543,15 +524,20 @@ function animate() {
         invaderProjectiles.splice(index, 1)
         player.opacity = 0
         game.over = true
-        scoresHandler(score)
+        // scoresHandler(score)
       }, 0)
       setTimeout(() => {
         game.active = false
         setTimeout(() => {
           container.classList.add('remover')
+          background.classList.remove('active')
           scoreElement.classList.add('remover')
-          pause.classList.add('remover')
+          pause[0].classList.add('remover')
+          pause[1].classList.add('remover')
+
           box.classList.remove('remover')
+          heading.classList.remove('remover')
+          info.classList.remove('hide')
         }, 2000)
       }, 2000)
       createParticles({ object: player, fades: true })

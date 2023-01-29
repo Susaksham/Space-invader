@@ -6,27 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="planet.css" />
+    <!-- <link rel="stylesheet" href="planet.css" /> -->
   </head>
   <body>
-    <!--rocket logic-->
-    <div class="planet-area">
-      <img
-        alt="rocket"
-        title="rocket"
-        class="rocket"
-        src="https://stepik.org/media/attachments/lesson/452681/rocket.png"
-      />
-      <img
-        alt="mars"
-        title="mars"
-        class="planet"
-        src="https://stepik.org/media/attachments/lesson/452681/mars.png"
-      />
+  
+    <div class="info"><p >Tap on the  </p><img src="./image/pngegg.png" alt=""> <p>to start the game</p></div>
+    <div class="heading">
+      <h1>SPACE</h1>
+      <h1>INVADER</h1>
     </div>
-    <div class="filter"></div>
-    <h1 class="heading">Space Invader</h1>
     <div class="box">
+      <!-- <div>
+        <h1>Welcome Sergeant</h1>
+      </div>
       <div class="lastStats">
         <h1>Last 5 Match Scores</h1>
         <ul class="stats">
@@ -36,8 +28,16 @@
       <div class="highestScoreStats">
         <h2>HighestScore</h2>
         <ul class="highestScore"></ul>
+      </div> -->
+      <div>
+        <img
+          class="start"
+          src="./image/pngegg.png"
+          alt=""
+          width="20px"
+          height="20px"
+        />
       </div>
-      <div><button class="start">Start</button></div>
     </div>
 
     <button class="specialElement">specialElement</button>
@@ -47,9 +47,17 @@
         <span id="scoreEl">0</span>
       </p>
       <canvas class="canvas"></canvas>
-      <div class="controls"><button class="pause remover">Pause</button></div>
+      <div class="controls">
+        <img src="./image/pause.png" class="pause remover buttons_control1"></img>
+        <img src="./image/play.png" class="pause remover buttons_control1 hide"></img>
+        <!-- <button class="quite buttons_control">Quite</button> -->
+        <a href="/" class="quite buttons_control2"><img src="./image/exit.png" alt=""></a>
+      </div>
     </div>
-    <script src="index.js"></script>
+    <div id="particles-js" class=""></div>
+    <script type="text/javascript" src="particles.js"></script>
+    <script type="text/javascript" src="app.js"></script>
     <script type="module" src="./classesFolder/Person.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>

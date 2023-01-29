@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=La+Belle+Aurore&family=Lobster&family=Merriweather:ital@1&family=Montserrat:ital@1&family=Rubik+Vinyl&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Syne+Mono&display=swap');
 * {
   margin: 0;
   padding: 0;
@@ -9,16 +9,67 @@ body {
   height: 100vh;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
   justify-content: center;
+  gap: 4rem;
 
   background-color: black;
-  background-image: url('https://stepik.org/media/attachments/lesson/452681/space.png');
+  /* background-image: url('./image/backg.jpg'); */
 
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+}
+.info {
+  position: absolute;
+  z-index: 1000000;
+  color: white;
+  top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  animation-name: infoship;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  /* animation-delay: 2s; */
+}
+.info p {
+  font-family: 'Syne Mono', monospace;
+  color: yellow;
+}
+
+.info img {
+  width: 2rem;
+  height: 2rem;
+}
+@keyframes infoship {
+  0% {
+    opacity: 1;
+  }
+  /* 50% {
+    opacity: 0.8;
+  } */
+  100% {
+    opacity: 0.4;
+  }
+}
+.canvas {
+  box-shadow: 3px 3px 0 yellow, -1px -1px 0 yellow, 1px -1px 0 yellow,
+    -1px 1px 0 yellow, 1px 1px 0 yellow;
+  border-radius: 10px;
+}
+#particles-js {
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+}
+#particles-js.active {
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(5, 20, 87, 0.861);
 }
 .filter {
   width: 100%;
@@ -28,30 +79,24 @@ body {
   position: absolute;
 }
 .heading {
-  position: fixed;
-  left: 3%;
-  top: 3%;
-  color: white;
-  font-size: 3rem;
-  font-family: 'Merriweather', serif;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10000000000000000000;
+}
+.heading h1 {
+  color: rgb(0, 0, 0);
+  font-size: 7rem;
+  font-family: 'Dela Gothic One', cursive;
+
+  font-style: italic;
+  text-transform: capitalize;
+
+  text-shadow: 3px 3px 0 yellow, -1px -1px 0 yellow, 1px -1px 0 yellow,
+    -1px 1px 0 yellow, 1px 1px 0 yellow;
 }
 .box {
-  width: 30rem;
-  height: 35rem;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 3rem;
-  margin-top: 3rem;
-  box-sizing: border-box;
-  overflow: hidden;
+  z-index: 1000;
 }
 .highestScoreStats {
   display: flex;
@@ -61,46 +106,80 @@ body {
 
 .start {
   box-sizing: border-box;
-  padding: 1rem 2rem;
-  border-radius: 10px;
-  border: 1px solid #ffff;
-  outline: none;
-  font-size: 1.3rem;
-  background-color: black;
-  color: #ffff;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(5px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: 20rem;
+  height: 25rem;
+  aspect-ratio: 9/16;
+  transform: rotate(-45deg);
+
+  transition: all 0.3s ease-in-out;
 }
-.pause {
+
+.start.active {
+  animation-name: spaceship;
+  animation-duration: 1s;
+}
+@keyframes spaceship {
+  0% {
+    transform: rotate(-45deg);
+  }
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+.start:hover {
+  transform: translateY(-20px) rotate(-45deg);
+}
+
+.buttons_control1 {
+  font-family: 'Dela Gothic One', cursive;
   box-sizing: border-box;
-  padding: 1rem 2rem;
-  border-radius: 10px;
-  border: 1px solid #ffff;
-  outline: none;
-  font-size: 1.3rem;
-  background-color: black;
-  color: #ffff;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(5px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  color: rgb(21, 21, 21);
+  font-size: 2rem;
+  font-family: 'Dela Gothic One', cursive;
+
+  font-style: italic;
+  text-transform: capitalize;
+  background-color: transparent;
+
+  text-shadow: 3px 3px 0 yellow, -1px -1px 0 yellow, 1px -1px 0 yellow,
+    -1px 1px 0 yellow, 1px 1px 0 yellow;
+  user-select: none;
+}
+.buttons_control2 {
+  font-family: 'Dela Gothic One', cursive;
+  box-sizing: border-box;
+  padding: 4.5rem 3rem;
+
+  border-radius: 50%;
+  color: rgb(21, 21, 21);
+  font-size: 2rem;
+  font-family: 'Dela Gothic One', cursive;
+
+  font-style: italic;
+  text-transform: capitalize;
+  background-color: transparent;
+  border: none;
+
+  text-shadow: 3px 3px 0 yellow, -1px -1px 0 yellow, 1px -1px 0 yellow,
+    -1px 1px 0 yellow, 1px 1px 0 yellow;
+  text-decoration: none;
+  user-select: none;
 }
 .container {
   position: relative;
   width: 1300px;
   display: flex;
   top: 2rem;
+  gap: 2rem;
+  z-index: 10000;
 }
 .controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3rem;
   width: 100%;
 }
 
@@ -123,4 +202,7 @@ body {
 ul li {
   list-style: none;
   font-size: 1.6rem;
+}
+.hide {
+  display: none;
 }
